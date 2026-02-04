@@ -1,42 +1,30 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>Alinux Repo Browser</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
-        .pkg-card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .btn { background: #007bff; color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; }
-    </style>
-</head>
-<body>
-    <h1>🛰️ Alinux 雲端套件庫</h1>
-    <div id="repo-list">正在載入套件清單...</div>
+<div id="repo-list">正在掃描倉庫檔案...</div>
 
-    <script>
-        // 讀取同目錄下的 index.json
-        fetch('index.json')
-            .then(response => response.json())
-            .then(data => {
-                const listDiv = document.getElementById('repo-list');
-                listDiv.innerHTML = ''; // 清空字串
-                
-                // 假設你的 index.json 格式是一個陣列 [ { "name": "anshell", "version": "1.0" }, ... ]
-                data.packages.forEach(pkg => {
-                    const card = document.createElement('div');
-                    card.className = 'pkg-card';
-                    card.innerHTML = `
-                        <div>
-                            <strong>${pkg.name}</strong> (v${pkg.version})
-                        </div>
-                        <a href="packages/${pkg.name}.aip" class="btn">下載 AIP</a>
-                    `;
-                    listDiv.appendChild(card);
-                });
-            })
-            .catch(err => {
-                document.getElementById('repo-list').innerHTML = '無法載入 index.json，請確認檔案格式正確。';
+<script>
+    const username = "你的GitHub帳號";
+    const repo = "repo_1";
+    const path = "packages"; // 存放 .aip 的資料夾
+
+    fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`)
+        .then(response => response.json())
+        .then(files => {
+            const listDiv = document.getElementById('repo-list');
+            listDiv.innerHTML = '';
+            
+            // 篩選出所有 .aip 結尾的檔案
+            const aipFiles = files.filter(file => file.name.endsWith('.aip'));
+            
+            aipFiles.forEach(file => {
+                const card = document.createElement('div');
+                card.className = 'pkg-card';
+                card.innerHTML = `
+                    <div><strong>${file.name}</strong></div>
+                    <a href="${file.download_url}" class="btn">立即下載</a>
+                `;
+                listDiv.appendChild(card);
             });
-    </script>
-</body>
-</html>
+        })
+        .catch(err => {
+            listDiv.innerHTML = "無法讀取倉庫，請檢查 API 限制或路徑。";
+        });
+</script>
